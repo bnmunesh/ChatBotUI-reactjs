@@ -111,10 +111,28 @@
   .chat_input textarea:valid ~ span {
     visibility: visible;
   }
-  .chatbot_toggler {
+  .xyz{
     position: fixed;
     bottom: 40px;
     right: 35px;
+    width:400px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    /* background-color: #495464; */
+  }
+
+  .xyz .switch-text{
+    /* font-size: smaller; */
+    width: 300px;
+    /* background-color: aqua; */
+    margin-right: 20px;
+    text-align: center;
+  }
+
+
+
+  .chatbot_toggler {
     height: 50px;
     width: 50px;
     color: #e8e8e8;

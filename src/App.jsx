@@ -12,11 +12,7 @@ function App() {
   useEffect(()=>{
     socket.emit("create-conversation");
   }, [])
-  socket.on('convo-creted', (convoID)=>{
-    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!")
-    localStorage.setItem("convoID", convoID)
-    localStorage.setItem("threadID", null)
-  })
+  
 
   return (
     <BrowserRouter>
