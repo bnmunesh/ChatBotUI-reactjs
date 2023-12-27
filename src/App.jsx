@@ -4,8 +4,8 @@ import {BrowserRouter, Routes, Route} from "react-router-dom"
 import io from "socket.io-client";
 export const socket = io("ws://localhost:3000")
 import { useEffect } from 'react';
-//import "./App.css"
 import CustomerSupportChat from './Pages/Executive/CustomerSupportChat.jsx';
+import CustomerSupportForm from './Pages/FormPage/CustomerSupportForm.jsx';
 
 function App() {
 
@@ -23,6 +23,7 @@ function App() {
     <Routes>
       <Route path='User' element={<Chatbot socket={socket}/>} />
       <Route path='Executive' element={<CustomerSupportChat socket={socket}/>} />
+      <Route path='Form' element={<CustomerSupportForm/>} />
     </Routes>
     </BrowserRouter>
   )
