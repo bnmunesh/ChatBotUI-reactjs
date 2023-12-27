@@ -1,9 +1,10 @@
 // CustomerSupportChat.js
 import "../../App.css";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./customer-support-chat.css";
 
-const CustomerSupportChat = () => {
+const CustomerSupportChat = ({socket}) => {
+  const [convos, setConvos] = useState([])
   // Sample data for conversations
   const [conversations, setConversations] = useState([
     {
@@ -33,6 +34,47 @@ const CustomerSupportChat = () => {
     // ... additional conversations ...
   ]);
 
+  function updateConvos(chat){
+    console.log({convos, chat})
+    // const bufChats = convos;
+    // for(let i=0; i<bufChats.length; i++){
+    //   if(bufChats[i]._id === chat._id){
+    //     bufChats[i] = chat;
+    //   }
+    // }
+    // console.log("bufChats", bufChats)
+    // setConvos(bufChats);
+  }
+
+    useEffect(()=>{
+      socket.emit('load-chats-for-executive')
+      socket.on("convos-for-executive", (chats)=>{
+        setConvos(chats)
+      })
+      socket.on('new-customer-for-executive', (chat)=>{
+        console.log("chats", chat)
+        setConvos(chats=>[chat, ...chats])
+      })
+    }, [])
+    socket.on("user-response", chat=>{
+      console.log("userResponse", chat)
+      // updateConvos(chat)
+      let bufChats = convos;
+      console.log("buff chats before iteration:", {bufChats, convos})
+      for(let i=0; i<bufChats.length; i++){
+        if(bufChats[i]._id === chat._id){
+          bufChats[i] = chat;
+        }
+      }
+      console.log("bufChats", bufChats)
+      setConvos(bufChats);
+      if(selectedConversation && selectedConversation._id === chat._id){
+        setSelectedConversation(chat)
+      }
+    })
+
+
+    
   // State to keep track of the selected conversation
   const [selectedConversation, setSelectedConversation] = useState(null);
 
@@ -51,9 +93,10 @@ const CustomerSupportChat = () => {
 
   // Function to handle conversation selection
   const handleConversationSelect = (conversationId) => {
-    const selectedConv = conversations.find(
-      (conv) => conv.id === conversationId
+    const selectedConv = convos.find(
+      (conv) => conv._id === conversationId
     );
+    console.log("selectedConv", selectedConv, "id", conversationId,convos)
     setSelectedConversation(selectedConv);
   };
 
@@ -84,9 +127,10 @@ const CustomerSupportChat = () => {
 
   // Function to handle sending a new message
   const handleSendMessage = () => {
+    console.log("sendMessage",{selectedConversation, newMessage, conversations})
     if (selectedConversation && newMessage.trim() !== "") {
-      const updatedConversations = conversations.map((conv) =>
-        conv.id === selectedConversation.id
+      const updatedConversations = convos.map((conv) =>
+        conv._id === selectedConversation._id
           ? {
               ...conv,
               messages: [
@@ -96,10 +140,21 @@ const CustomerSupportChat = () => {
             }
           : conv
       );
-      setConversations(updatedConversations);
+      console.log("id:", selectedConversation._id)
+      socket.emit("message", {message: newMessage, convoID:selectedConversation._id, handler:"executive", sentBy:"executive"})
+      const buf = selectedConversation;
+      buf.messages = [...selectedConversation.messages, {text: newMessage, sentBy: "executive"}]
+      setSelectedConversation(buf)
+      // console.log(updatedConversations)
+      setConvos(updatedConversations);
       setNewMessage("");
     }
   };
+  const handleEndConversation = (e)=>{
+    e.preventDefault();
+    
+    socket.emit("executive-sets-close-conversation", selectedConversation._id)
+  }
 
   return (
     <div className="chat-container">
@@ -116,16 +171,16 @@ const CustomerSupportChat = () => {
         />
 
         <ul className="conversation-list">
-          {filteredConversations.map((conversation) => (
+          {convos.length > 0 && convos.map((conversation, i) => (
             <div
-              key={conversation.id}
+              key={conversation._id}
               className={`conversation-item ${
-                selectedConversation?.id === conversation.id ? "selected" : ""
+                selectedConversation?._id === conversation._id ? "selected" : "notselected"
               }`}
-              onClick={() => handleConversationSelect(conversation.id)}
+              onClick={() => handleConversationSelect(conversation._id)}
             >
-              <div>{`ID: ${conversation.id}`}</div>
-              <div>Status: {conversation.status}</div>
+              <div>{`ID: ${conversation._id}`}</div>
+              {/* <div>Status: {conversation.status}</div> */}
             </div>
           ))}
         </ul>
@@ -164,15 +219,15 @@ const CustomerSupportChat = () => {
         {selectedConversation ? (
           <>
             <div className="conversation-header">
-              <h2 className="chat-header">{`Conversation ID: ${selectedConversation.id} - Status: ${selectedConversation.status}`}</h2>
-              <button>End Chat </button>
+              <h2 className="chat-header">{`Conversation ID: ${selectedConversation._id} - Status: ${selectedConversation.status}`}</h2>
+              <button onClick={handleEndConversation}>End Chat </button>
             </div>
             <div className="message-container">
               {/* Display messages for the selected conversation */}
               {selectedConversation.messages.map((message, index) => (
                 <div
                   key={index}
-                  className={`message-item ${message.type}`}
+                  className={`message-item ${message.sentBy === "bot" || message.sentBy === "executive" ? "incoming" : 'outgoing'}`}
                 >
                   {message.text}
                 </div>

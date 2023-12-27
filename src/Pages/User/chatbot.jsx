@@ -10,6 +10,9 @@ import React, {
     const [showChatbot, setShowChatbot] = useState(false);
     const [userMessage, setUserMessage] = useState("");
     const [chatHistory, setChatHistory] = useState([]);
+    const [handler, setHandler] = useState("bot");
+    const [convoIDOfficial, setConvoIDOfficial] = useState(null)
+
     const chatboxRef = useRef(null);
     const chatInputRef = useRef(null);
   
@@ -35,6 +38,13 @@ import React, {
   
 
     useEffect(()=>{
+      socket.on('convo-creted', (convoID)=>{
+        if(!convoIDOfficial){
+          localStorage.setItem("convoID", convoID)
+          localStorage.setItem("threadID", null)
+          setConvoIDOfficial(convoID)
+        }
+      })
       socket.on("query-response", (data)=>{
         console.log("data",data)
         localStorage.setItem("threadID", data.threadID)
@@ -43,6 +53,9 @@ import React, {
           ...prevChatHistory, 
           { sender: "bot", message: data.text },
         ]);
+      })
+      socket.on("executive-response", data=>{
+        setChatHistory((prevChatHistory)=>[...prevChatHistory, {sender:"executive", message: data.text}])
       })
     }, [])
 
@@ -63,9 +76,9 @@ import React, {
   
       setUserMessage("");
 
-      const convoID = localStorage.getItem("convoID");
+      // const convoID = localStorage.getItem("convoID");
       const threadID = localStorage.getItem("threadID");
-      socket.emit("message", {message:userMessage, threadID: threadID ? threadID :null, convoID})
+      socket.emit("message", {message:userMessage, threadID: threadID ? threadID :null, convoID:convoIDOfficial, handler, sentBy: "user"})
   
       //loadingg......
       // setChatHistory((prevChatHistory) => [
@@ -99,16 +112,33 @@ import React, {
         handleChat();
       }
     };
+
+    const HanldeSwtichToExecutive = () =>{
+      setHandler("executive");
+      const convoID = localStorage.getItem("convoID");
+      socket.emit("switch-to-executive", convoID)
+    }
   
     return (
       <section className="show-chatbot" style={{backgroundColor: "#fffff"}}>
-        <button className="chatbot_toggler" onClick={toggleChatbot}>
-          {showChatbot ? (
-            <span className="material-symbols-outlined">close</span>
-          ) : (
-            <span className="material-symbols-outlined">mode_comment</span>
-          )}
-        </button>
+          <div className="xyz">
+            {showChatbot? (
+              <div className="switch-text" style={{color:"black"}}>
+                <p >Not satisfied with the bot? <span onClick={HanldeSwtichToExecutive} style={{textDecoration:"underline", cursor:"pointer"}}>click here to switch to an actual executive</span></p>
+              </div>
+            ): (
+              <div className="switch-text">
+                <p>hihihih</p>
+              </div>
+            )}
+            <button className="chatbot_toggler" onClick={toggleChatbot}>
+              {showChatbot ? (
+                <span className="material-symbols-outlined">close</span>
+                ) : (
+                  <span className="material-symbols-outlined">mode_comment</span>
+                  )}
+            </button>
+          </div>
         {showChatbot && (
           <div className="chatbot">
             <header>
@@ -124,10 +154,10 @@ import React, {
                 <li
                   key={index}
                   className={`chat ${
-                    chat.sender === "bot" ? "incoming" : "outgoing"
+                    chat.sender === "bot" || chat.sender === "executive" ? "incoming" : "outgoing"
                   }`}
                 >
-                  {chat.sender === "bot" && (
+                  {(chat.sender === "bot" || chat.sender === "executive") && (
                     <span className="material-symbols-outlined">smart_toy</span>
                   )}
                   <p>{chat.message}</p>
