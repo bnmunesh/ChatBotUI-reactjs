@@ -101,7 +101,7 @@ import React, {
     };
   
     return (
-      <section className="show-chatbot">
+      <section className="show-chatbot" style={{backgroundColor: "#fffff"}}>
         <button className="chatbot_toggler" onClick={toggleChatbot}>
           {showChatbot ? (
             <span className="material-symbols-outlined">close</span>
