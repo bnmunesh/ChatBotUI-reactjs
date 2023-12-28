@@ -17,6 +17,7 @@ body {
 
 .conversation-header > button {
   background-color: #d04646;
+  cursor: pointer;
 }
 
 .conversations-container {

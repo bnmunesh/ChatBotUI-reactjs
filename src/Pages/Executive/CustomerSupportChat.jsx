@@ -2,9 +2,11 @@
 import "../../App.css";
 import React, { useEffect, useState } from "react";
 import "./customer-support-chat.css";
+import { useNavigate } from "react-router-dom";
 
 const CustomerSupportChat = ({socket}) => {
   const [convos, setConvos] = useState([])
+  const [OriginalListOfConvos, setOriginalListOfConvos] = useState([])
   // Sample data for conversations
   const [conversations, setConversations] = useState([
     {
@@ -33,47 +35,37 @@ const CustomerSupportChat = ({socket}) => {
     { id: 17, status: "closed", messages: [] },
     // ... additional conversations ...
   ]);
+  const navigate = useNavigate();
 
-  function updateConvos(chat){
-    console.log({convos, chat})
-    // const bufChats = convos;
-    // for(let i=0; i<bufChats.length; i++){
-    //   if(bufChats[i]._id === chat._id){
-    //     bufChats[i] = chat;
-    //   }
-    // }
-    // console.log("bufChats", bufChats)
-    // setConvos(bufChats);
-  }
-
-    useEffect(()=>{
-      socket.emit('load-chats-for-executive')
-      socket.on("convos-for-executive", (chats)=>{
-        setConvos(chats)
-      })
-      socket.on('new-customer-for-executive', (chat)=>{
-        console.log("chats", chat)
-        setConvos(chats=>[chat, ...chats])
-      })
-    }, [])
-    socket.on("user-response", chat=>{
-      console.log("userResponse", chat)
-      // updateConvos(chat)
-      let bufChats = convos;
-      console.log("buff chats before iteration:", {bufChats, convos})
-      for(let i=0; i<bufChats.length; i++){
-        if(bufChats[i]._id === chat._id){
-          bufChats[i] = chat;
-        }
-      }
-      console.log("bufChats", bufChats)
-      setConvos(bufChats);
-      if(selectedConversation && selectedConversation._id === chat._id){
-        setSelectedConversation(chat)
-      }
+  useEffect(()=>{
+    socket.emit('load-chats-for-executive')
+    socket.on("convos-for-executive", (chats)=>{
+      console.log(chats)
+      setConvos(chats)
+      setOriginalListOfConvos(chats);
     })
+    socket.on('new-customer-for-executive', (chat)=>{
+      console.log("chats", chat)
+      setConvos(chats=>[chat, ...chats])
+    })
+  }, [])
 
-
+  socket.on("user-response", chat=>{
+    console.log("userResponse", chat)
+    // updateConvos(chat)
+    let bufChats = convos;
+    console.log("buff chats before iteration:", {bufChats, convos})
+    for(let i=0; i<bufChats.length; i++){
+      if(bufChats[i]._id === chat._id){
+        bufChats[i] = chat;
+      }
+    }
+    console.log("bufChats", bufChats)
+    setConvos(bufChats);
+    if(selectedConversation && selectedConversation._id === chat._id){
+      setSelectedConversation(chat)
+    }
+  })
     
   // State to keep track of the selected conversation
   const [selectedConversation, setSelectedConversation] = useState(null);
@@ -119,10 +111,31 @@ const CustomerSupportChat = ({socket}) => {
 
   // Function to handle status filter changes
   const handleStatusFilterChange = (status) => {
-    setStatusFilters((prevFilters) => ({
-      ...prevFilters,
-      [status]: !prevFilters[status],
-    }));
+      let buffer = [];
+      if(statusFilters.ongoing || status == "ongoing"){
+        if(statusFilters.ongoing ^ (status == "ongoing")){
+          const bufChats = OriginalListOfConvos.filter((el)=> el.executiveSocketID != null && el.status != "closed");
+          buffer = [...bufChats]
+        }
+      }
+      if(statusFilters.waiting || status == "waiting"){
+        if(statusFilters.waiting ^ status == 'waiting'){
+          const bufChats = OriginalListOfConvos.filter(el=>el.executiveSocketID == null && el.status != "closed");
+          buffer = [...buffer, ...bufChats]
+        }
+      }
+      if(statusFilters.closed || status == "closed"){
+        if(statusFilters.closed ^ status == "closed"){
+          const bufChats = OriginalListOfConvos.filter(el=>el.status === "closed")
+          buffer = [...buffer, ...bufChats]
+        }
+      }
+      if(buffer.length === 0) buffer = OriginalListOfConvos;
+      setConvos(buffer)
+      setStatusFilters((prevFilters) => ({
+        ...prevFilters,
+        [status]: !prevFilters[status],
+      }));
   };
 
   // Function to handle sending a new message
@@ -150,10 +163,13 @@ const CustomerSupportChat = ({socket}) => {
       setNewMessage("");
     }
   };
+
   const handleEndConversation = (e)=>{
     e.preventDefault();
-    
+    let arr = convos;
+    arr = arr.filter(el=>el._id != selectedConversation._id)
     socket.emit("executive-sets-close-conversation", selectedConversation._id)
+    navigate('/form', {state: {conversationID: selectedConversation._id} });
   }
 
   return (
@@ -220,7 +236,7 @@ const CustomerSupportChat = ({socket}) => {
           <>
             <div className="conversation-header">
               <h2 className="chat-header">{`Conversation ID: ${selectedConversation._id} - Status: ${selectedConversation.status}`}</h2>
-              <button onClick={handleEndConversation}>End Chat </button>
+              {selectedConversation.status === "closed" ? <></>: <button onClick={handleEndConversation}>End Chat</button>}
             </div>
             <div className="message-container">
               {/* Display messages for the selected conversation */}

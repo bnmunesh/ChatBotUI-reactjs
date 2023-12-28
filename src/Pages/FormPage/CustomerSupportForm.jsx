@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './CustomerSupportForm.css'; // Import the stylesheet
+import { useLocation } from 'react-router-dom';
 
-const CustomerSupportForm = () => {
+const CustomerSupportForm = ({socket}) => {
+  const {state} = useLocation();
   const [formData, setFormData] = useState({
-    conversationId: '',
+    conversationId: state.conversationID ? state.conversationID : "",
     executiveName: '',
     executiveId: '',
     customerName: '',
@@ -13,6 +15,14 @@ const CustomerSupportForm = () => {
     solutionSummary: '',
     noQueryReason: '',
   });
+
+// To handle form response
+  useEffect(()=>{
+    socket.on('form-response', (data)=>{
+      if(data.success)alert('Form submitted successfully!');
+      else alert('Form Submission Failed!')
+    })
+  }, [])
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,7 +35,7 @@ const CustomerSupportForm = () => {
   const handleSubmit = () => {
     // Perform form validation and data submission to the database
     // You can use a state management library like Redux or send data via API
-    alert('Form submitted successfully!');
+    socket.emit("form-submission", {convoID: formData.conversationId, executiveName: formData.executiveName, executiveID: formData.executiveId, customerName: formData.customerName, customerEmail: formData.customerEmail, customerQuery: formData.querySummary, resolved: formData.queryAnswered === "yes" ? true : false, solution:formData.solutionSummary})
   };
 
   const handleClear = () => {

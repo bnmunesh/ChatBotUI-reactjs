@@ -19,7 +19,7 @@ function App() {
     <Routes>
       <Route path='User' element={<Chatbot socket={socket}/>} />
       <Route path='Executive' element={<CustomerSupportChat socket={socket}/>} />
-      <Route path='Form' element={<CustomerSupportForm/>} />
+      <Route path='Form' element={<CustomerSupportForm socket={socket}/>} />
     </Routes>
     </BrowserRouter>
   )
