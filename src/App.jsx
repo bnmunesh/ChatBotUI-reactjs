@@ -6,11 +6,12 @@ export const socket = io("ws://localhost:3000")
 import { useEffect } from 'react';
 import CustomerSupportChat from './Pages/Executive/CustomerSupportChat.jsx';
 import CustomerSupportForm from './Pages/FormPage/CustomerSupportForm.jsx';
+import Loginexecutive from './Pages/login/Loginexecutive.jsx';
 
 function App() {
 
   useEffect(()=>{
-    socket.emit("create-conversation");
+    
   }, [])
   
 
@@ -20,6 +21,7 @@ function App() {
       <Route path='User' element={<Chatbot socket={socket}/>} />
       <Route path='Executive' element={<CustomerSupportChat socket={socket}/>} />
       <Route path='Form' element={<CustomerSupportForm socket={socket}/>} />
+      <Route path='login' element={<Loginexecutive socket={socket}/>} />
     </Routes>
     </BrowserRouter>
   )

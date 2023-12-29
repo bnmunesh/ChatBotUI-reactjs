@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom';
 const CustomerSupportForm = ({socket}) => {
   const {state} = useLocation();
   const [formData, setFormData] = useState({
-    conversationId: state.conversationID ? state.conversationID : "",
+    conversationId: state?.conversationID ? state?.conversationID : "",
     executiveName: '',
     executiveId: '',
     customerName: '',

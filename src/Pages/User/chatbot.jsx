@@ -67,19 +67,23 @@ import React, {
     }, [chatHistory]);
   
     const handleChat = async () => {
-      
       if (!userMessage.trim()) return;
-      setChatHistory((prevChatHistory) => [
+      console.log("++++++++++++++========================+++++++++++++++++++")
+      if(chatHistory.length === 0) socket.emit("create-convo-and-add-message", {message:userMessage, handler});
+      else{
+        const threadID = localStorage.getItem("threadID");
+        console.log("++++++++++++++++++++++++++++++++++++++++++++++++=")
+        socket.emit("message", {message:userMessage, threadID: threadID ? threadID :null, convoID:convoIDOfficial, handler, sentBy: "user"})
+      }
+        
+        setChatHistory((prevChatHistory) => [
         ...prevChatHistory,
         { sender: "user", message: userMessage },
       ]);
-  
+      
+      
+      
       setUserMessage("");
-
-      // const convoID = localStorage.getItem("convoID");
-      const threadID = localStorage.getItem("threadID");
-      socket.emit("message", {message:userMessage, threadID: threadID ? threadID :null, convoID:convoIDOfficial, handler, sentBy: "user"})
-  
       //loadingg......
       // setChatHistory((prevChatHistory) => [
       //   ...prevChatHistory,

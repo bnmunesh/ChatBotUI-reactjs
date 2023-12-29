@@ -7,46 +7,28 @@ import { useNavigate } from "react-router-dom";
 const CustomerSupportChat = ({socket}) => {
   const [convos, setConvos] = useState([])
   const [OriginalListOfConvos, setOriginalListOfConvos] = useState([])
-  // Sample data for conversations
-  const [conversations, setConversations] = useState([
-    {
-      id: 1,
-      status: "ongoing",
-      messages: [
-        { text: "Hello!", type: "incoming" },
-        { text: "I need help", type: "incoming" },
-        { text: "How can we assist you today?", type: "outgoing" },
-      ],
-    },
-    { id: 2, status: "waiting", messages: [] },
-    { id: 4, status: "closed", messages: [] },
-    { id: 5, status: "closed", messages: [] },
-    { id: 6, status: "waiting", messages: [] },
-    { id: 7, status: "waiting", messages: [] },
-    { id: 8, status: "closed", messages: [] },
-    { id: 9, status: "closed", messages: [] },
-    { id: 10, status: "waiting", messages: [] },
-    { id: 11, status: "waiting", messages: [] },
-    { id: 12, status: "closed", messages: [] },
-    { id: 13, status: "closed", messages: [] },
-    { id: 14, status: "closed", messages: [] },
-    { id: 15, status: "closed", messages: [] },
-    { id: 16, status: "closed", messages: [] },
-    { id: 17, status: "closed", messages: [] },
-    // ... additional conversations ...
-  ]);
+  const [selectedConversation, setSelectedConversation] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(()=>{
+    handleStatusFilterChange("setAllByCheckingStatusFilter");
+  }, [OriginalListOfConvos])
+
+
+  useEffect(()=>{
+    console.log({selectedConversation})
+  }, [selectedConversation])
 
   useEffect(()=>{
     socket.emit('load-chats-for-executive')
     socket.on("convos-for-executive", (chats)=>{
       console.log(chats)
-      setConvos(chats)
       setOriginalListOfConvos(chats);
     })
     socket.on('new-customer-for-executive', (chat)=>{
       console.log("chats", chat)
-      setConvos(chats=>[chat, ...chats])
+      setOriginalListOfConvos(chats=>[chat, ...chats])
+
     })
   }, [])
 
@@ -61,14 +43,13 @@ const CustomerSupportChat = ({socket}) => {
       }
     }
     console.log("bufChats", bufChats)
-    setConvos(bufChats);
+    setOriginalListOfConvos(bufChats);
     if(selectedConversation && selectedConversation._id === chat._id){
       setSelectedConversation(chat)
     }
   })
     
   // State to keep track of the selected conversation
-  const [selectedConversation, setSelectedConversation] = useState(null);
 
   // State for search bar
   const [searchTerm, setSearchTerm] = useState("");
@@ -93,8 +74,8 @@ const CustomerSupportChat = ({socket}) => {
   };
 
   // Function to filter conversations based on search term and status filters
-  const filteredConversations = conversations.filter((conversation) => {
-    const hasSearchTerm = conversation.id.toString().includes(searchTerm);
+  const filteredConversations = OriginalListOfConvos.filter((conversation) => {
+    const hasSearchTerm = conversation._id.toString().includes(searchTerm);
     const isFiltered =
       (statusFilters.ongoing && conversation.status === "ongoing") ||
       (statusFilters.waiting && conversation.status === "waiting") ||
@@ -112,25 +93,29 @@ const CustomerSupportChat = ({socket}) => {
   // Function to handle status filter changes
   const handleStatusFilterChange = (status) => {
       let buffer = [];
+      let addedChats = false;
       if(statusFilters.ongoing || status == "ongoing"){
         if(statusFilters.ongoing ^ (status == "ongoing")){
+          addedChats = true;
           const bufChats = OriginalListOfConvos.filter((el)=> el.executiveSocketID != null && el.status != "closed");
           buffer = [...bufChats]
         }
       }
       if(statusFilters.waiting || status == "waiting"){
         if(statusFilters.waiting ^ status == 'waiting'){
+          addedChats = true;
           const bufChats = OriginalListOfConvos.filter(el=>el.executiveSocketID == null && el.status != "closed");
           buffer = [...buffer, ...bufChats]
         }
       }
       if(statusFilters.closed || status == "closed"){
         if(statusFilters.closed ^ status == "closed"){
+          addedChats = true;
           const bufChats = OriginalListOfConvos.filter(el=>el.status === "closed")
           buffer = [...buffer, ...bufChats]
         }
       }
-      if(buffer.length === 0) buffer = OriginalListOfConvos;
+      if(!addedChats && buffer.length === 0) buffer = OriginalListOfConvos;
       setConvos(buffer)
       setStatusFilters((prevFilters) => ({
         ...prevFilters,
@@ -140,26 +125,29 @@ const CustomerSupportChat = ({socket}) => {
 
   // Function to handle sending a new message
   const handleSendMessage = () => {
-    console.log("sendMessage",{selectedConversation, newMessage, conversations})
+    console.log("sendMessage",{selectedConversation, newMessage})
     if (selectedConversation && newMessage.trim() !== "") {
-      const updatedConversations = convos.map((conv) =>
-        conv._id === selectedConversation._id
-          ? {
-              ...conv,
-              messages: [
-                ...conv.messages,
-                { text: newMessage, type: "outgoing" },
-              ],
-            }
-          : conv
-      );
-      console.log("id:", selectedConversation._id)
+      let SSL = null;
+      const updatedConversations = OriginalListOfConvos.map((conv) =>{
+        if (conv._id === selectedConversation._id){
+          conv = {
+            ...conv,
+            executiveSocketID:socket.id,
+            messages: [
+              ...conv.messages,
+              { text: newMessage, sentBy: "executive" },
+            ],
+          }
+          setSelectedConversation(conv);
+        }
+        return conv;
+        });
       socket.emit("message", {message: newMessage, convoID:selectedConversation._id, handler:"executive", sentBy:"executive"})
-      const buf = selectedConversation;
-      buf.messages = [...selectedConversation.messages, {text: newMessage, sentBy: "executive"}]
-      setSelectedConversation(buf)
-      // console.log(updatedConversations)
-      setConvos(updatedConversations);
+      // const buf = selectedConversation;
+      // buf.messages = [...selectedConversation.messages, {text: newMessage, sentBy: "executive"}]
+      // setSelectedConversation(buf)
+      console.log({updatedConversations})
+      setOriginalListOfConvos(updatedConversations);
       setNewMessage("");
     }
   };
@@ -169,7 +157,8 @@ const CustomerSupportChat = ({socket}) => {
     let arr = convos;
     arr = arr.filter(el=>el._id != selectedConversation._id)
     socket.emit("executive-sets-close-conversation", selectedConversation._id)
-    navigate('/form', {state: {conversationID: selectedConversation._id} });
+    // navigate('/form', {state: {conversationID: selectedConversation._id} });
+    window.open('http://localhost:5173/form','_blank')
   }
 
   return (
@@ -196,7 +185,7 @@ const CustomerSupportChat = ({socket}) => {
               onClick={() => handleConversationSelect(conversation._id)}
             >
               <div>{`ID: ${conversation._id}`}</div>
-              {/* <div>Status: {conversation.status}</div> */}
+              <div>Status: {conversation.status === "closed"? "closed": conversation.executiveSocketID != null ? "ongoing" : "waiting"}</div>
             </div>
           ))}
         </ul>
@@ -235,7 +224,7 @@ const CustomerSupportChat = ({socket}) => {
         {selectedConversation ? (
           <>
             <div className="conversation-header">
-              <h2 className="chat-header">{`Conversation ID: ${selectedConversation._id} - Status: ${selectedConversation.status}`}</h2>
+              <h2 className="chat-header">{`Conversation ID: ${selectedConversation._id} - Status: ${selectedConversation.status === "closed"? "closed": selectedConversation.executiveSocketID != null ? "ongoing" : "waiting"}`}</h2>
               {selectedConversation.status === "closed" ? <></>: <button onClick={handleEndConversation}>End Chat</button>}
             </div>
             <div className="message-container">
@@ -243,7 +232,7 @@ const CustomerSupportChat = ({socket}) => {
               {selectedConversation.messages.map((message, index) => (
                 <div
                   key={index}
-                  className={`message-item ${message.sentBy === "bot" || message.sentBy === "executive" ? "incoming" : 'outgoing'}`}
+                  className={`message-item ${message.sentBy === "bot" || message.sentBy === "executive" ? "outgoing" : 'incoming'}`}
                 >
                   {message.text}
                 </div>
