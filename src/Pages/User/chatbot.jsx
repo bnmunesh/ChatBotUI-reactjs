@@ -132,7 +132,7 @@ import React, {
               </div>
             ): (
               <div className="switch-text">
-                <p>hihihih</p>
+                <></>
               </div>
             )}
             <button className="chatbot_toggler" onClick={toggleChatbot}>

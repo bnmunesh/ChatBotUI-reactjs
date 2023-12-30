@@ -20,6 +20,11 @@ const CustomerSupportChat = ({socket}) => {
   }, [selectedConversation])
 
   useEffect(()=>{
+
+    const executiveID=localStorage.getItem("executiveID")
+    if(!executiveID){
+      navigate("/login")
+    }
     socket.emit('load-chats-for-executive')
     socket.on("convos-for-executive", (chats)=>{
       console.log(chats)
