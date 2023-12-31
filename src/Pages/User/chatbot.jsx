@@ -132,7 +132,7 @@ import React, {
               </div>
             ): (
               <div className="switch-text">
-                <p>hihihih</p>
+                <></>
               </div>
             )}
             <button className="chatbot_toggler" onClick={toggleChatbot}>
@@ -170,7 +170,7 @@ import React, {
             </ul>
             <div className="chat_input">
               <textarea
-                placeholder="Enter a message..."
+                placeholder="Type your message..."
                 spellCheck="false"
                 required
                 value={userMessage}
