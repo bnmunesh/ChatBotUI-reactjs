@@ -32,6 +32,21 @@ const CustomerSupportChat = ({socket}) => {
     })
   }, [])
 
+  socket.on("user-disconected", (socketID)=>{
+    const userDisconnected = OriginalListOfConvos.map(el=>{
+      if(el.socketID === socketID) {
+        el.status = "closed"
+      }
+      return el;
+    });
+    console.log(userDisconnected)
+    if(selectedConversation?.socketID === socketID){
+      setSelectedConversation(prev=> ({...prev, status: "closed"}))
+      alert("user-disconnected")
+    }
+    setOriginalListOfConvos(userDisconnected);
+  })
+
   socket.on("user-response", chat=>{
     console.log("userResponse", chat)
     // updateConvos(chat)
@@ -240,15 +255,16 @@ const CustomerSupportChat = ({socket}) => {
             </div>
 
             {/* Type Message Box and Send Button */}
-            <div className="input-box">
-              <input
-                type="text"
-                placeholder="Type your message..."
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-              />
-              <button onClick={handleSendMessage}>Send</button>
-            </div>
+            { selectedConversation.status !== "closed" && <div className="input-box">
+                <input
+                  type="text"
+                  placeholder="Type your message..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  />
+                <button onClick={handleSendMessage}>Send</button>
+              </div>
+            }
           </>
         ) : (
           <p>Select a conversation to start chatting</p>

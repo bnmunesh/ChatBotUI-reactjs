@@ -19,8 +19,10 @@ const CustomerSupportForm = ({socket}) => {
 // To handle form response
   useEffect(()=>{
     socket.on('form-response', (data)=>{
-      if(data.success)alert('Form submitted successfully!');
-      else alert('Form Submission Failed!')
+      if(data.success){
+        alert('Form submitted successfully!');
+        window.close()
+      }else alert('Form Submission Failed!')
     })
   }, [])
 
@@ -35,7 +37,7 @@ const CustomerSupportForm = ({socket}) => {
   const handleSubmit = () => {
     // Perform form validation and data submission to the database
     // You can use a state management library like Redux or send data via API
-    socket.emit("form-submission", {convoID: formData.conversationId, executiveName: formData.executiveName, executiveID: formData.executiveId, customerName: formData.customerName, customerEmail: formData.customerEmail, customerQuery: formData.querySummary, resolved: formData.queryAnswered === "yes" ? true : false, solution:formData.solutionSummary})
+    socket.emit("form-submission", {convoID: formData.conversationId, executiveName: formData.executiveName, executiveID: formData.executiveId, customerName: formData.customerName, customerEmail: formData.customerEmail, customerQuery: formData.querySummary, resolved: formData.queryAnswered === "yes" ? true : false, solution:formData.solutionSummary, reason: formData.noQueryReason})
   };
 
   const handleClear = () => {
