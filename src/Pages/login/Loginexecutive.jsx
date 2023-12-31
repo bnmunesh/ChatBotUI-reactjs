@@ -46,8 +46,8 @@ const Loginexecutive = () => {
         <div className='cover'>
             <h1 className='customFont'>Executive Login</h1>
             <div className='credentials'>
-                <input type="text" placeholder='username' value={userName} onChange={(e)=> setUserName(e.target.value)}/>
-                <input type="password" placeholder='password' value={userPass} onChange={(e)=> setUserPass(e.target.value)} />
+                <input type="text" placeholder='Username' value={userName} onChange={(e)=> setUserName(e.target.value)}/>
+                <input type="password" placeholder='Password' value={userPass} onChange={(e)=> setUserPass(e.target.value)} />
             </div>
             <label className='customFont labelcheckbox' >
                     <input className='checkboxlogin'  type="checkbox" checked={rememberMe} onChange={() => setRememberMe(!rememberMe)}/>

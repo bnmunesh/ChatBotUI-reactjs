@@ -174,6 +174,7 @@ const CustomerSupportChat = ({socket}) => {
 
         {/* Search Bar */}
         <input
+          className="searchbarid"
           type="text"
           placeholder="Search by ID"
           value={searchTerm}
