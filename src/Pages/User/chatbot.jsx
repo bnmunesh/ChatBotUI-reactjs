@@ -6,6 +6,7 @@ import React, {
     KeyboardEvent,
   } from "react";
   import "./chatbot.css";
+  import Airbnbsvg from './Airbnb.svg';
   const Chatbot = ({socket}) => {
     const [showChatbot, setShowChatbot] = useState(false);
     const [userMessage, setUserMessage] = useState("");
@@ -124,7 +125,7 @@ import React, {
     }
   
     return (
-      <section className="show-chatbot" style={{backgroundColor: "#fffff"}}>
+      <section className="show-chatbot">
           <div className="xyz">
             {showChatbot? (
               <div className="switch-text" style={{color:"black"}}>
@@ -152,7 +153,7 @@ import React, {
             <ul className="chatbox" ref={chatboxRef}>
               <li className="chat incoming">
                 <span className="material-symbols-outlined">smart_toy</span>
-                <p>Hello! How can I assist you today?</p>
+                <p>Hello there! I'm Aira, your Airbnb assistant. How may I help you today?</p>
               </li>
               {chatHistory.map((chat, index) => (
                 <li
