@@ -1,7 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./AdminPage.css";
+import axios from "axios";
 
 const AdminPage = () => {
+  const [faqs, setFaqs] = useState([])
+  
+  useEffect(()=>{
+    axios.get("http://localhost:3000/admin/faq/all-waiting").then(res=>{
+      if(res.data.success){
+        setFaqs(res.data.data)
+      }
+    })
+  },[])
+
   // Placeholder data for the Admin profile
   const adminData = {
     name: "John Doe",
@@ -78,12 +89,36 @@ const AdminPage = () => {
   // State to manage User Queries, selected option (Accept or Reject), and selected User Queries
   const [userQueries, setUserQueries] = useState(initialUserQueries);
 
-  const acceptHandler = (id) => {
-    console.log(`accepted :${id}`);
+  const acceptHandler = (faq) => {
+    if(faq){
+      axios.post("http://localhost:3000/admin/faq/accepted", {
+          faq   
+      }).then(res=>{
+        if(res.data.success){
+          const updatedFaqs = faqs.filter(el => el._id !== faq._id);
+          setFaqs([...updatedFaqs])
+        }
+      }).catch(e=>{
+        alert("failed to accept faq, try again");
+        console.log("failed to accept faq, try again:", e)
+      })
+    }
   };
 
-  const rejectHandler = (id) => {
-    console.log(`rejected : ${id}`);
+  const rejectHandler = (faq) => {
+    if(faq){
+      axios.post("http://localhost:3000/admin/faq/rejected", {
+          faq   
+      }).then(res=>{
+        if(res.data.success){
+          const updatedFaqs = faqs.filter(el => el._id !== faq._id);
+          setFaqs([...updatedFaqs])
+        }
+      }).catch(e=>{
+        alert("failed to reject faq, try again");
+        console.log("failed to reject faq, try again:", e)
+      })
+    }
   };
   const [open, setOpen] = useState(false);
 
@@ -129,13 +164,13 @@ const AdminPage = () => {
         <div className="right-column">
           <h2>User Queries</h2>
           <div className="user-queries-box">
-            {userQueries.map((query, index) => (
+            {faqs.length > 0 && faqs.map((query, index) => (
               <div key={query.id} className="faq-box">
                 <div className="container">
                   <h3>Query:</h3>
-                  <p>{query.userQuery}</p>
+                  <p>{query.FAQ}</p>
                   <h3>Assistant Response:</h3>
-                  <p on>{query.assistantResponse}</p>
+                  <p on>{query.Response}</p>
                 </div>
 
                 <div className="action-buttons">
@@ -143,10 +178,10 @@ const AdminPage = () => {
                   {/* { open &&
                     <CustomerSupportForm query={query}/>
                   } */}
-                  <button className="acceptbtn" onClick={() => acceptHandler(query.id)}>
+                  <button className="acceptbtn" onClick={() => acceptHandler(query)}>
                     Accept
                   </button>
-                  <button className="rejectbtn" onClick={() => rejectHandler(query.id)}>
+                  <button className="rejectbtn" onClick={() => rejectHandler(query)}>
                     Reject
                   </button>
                 </div>
