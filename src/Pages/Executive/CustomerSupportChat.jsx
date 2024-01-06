@@ -20,6 +20,10 @@ const CustomerSupportChat = ({socket}) => {
   }, [selectedConversation])
 
   useEffect(()=>{
+    const loginStatus = localStorage.getItem("executiveID");
+    if(loginStatus == null){
+      navigate("/login")
+    }
     socket.emit('load-chats-for-executive')
     socket.on("convos-for-executive", (chats)=>{
       console.log(chats)
@@ -28,8 +32,8 @@ const CustomerSupportChat = ({socket}) => {
     socket.on('new-customer-for-executive', (chat)=>{
       console.log("chats", chat)
       setOriginalListOfConvos(chats=>[chat, ...chats])
-
     })
+
   }, [])
 
   socket.on("user-disconected", (socketID)=>{

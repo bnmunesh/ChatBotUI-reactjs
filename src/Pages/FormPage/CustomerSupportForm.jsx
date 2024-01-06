@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './CustomerSupportForm.css'; // Import the stylesheet
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const CustomerSupportForm = ({socket}) => {
   const {state} = useLocation();
@@ -15,9 +15,15 @@ const CustomerSupportForm = ({socket}) => {
     solutionSummary: '',
     noQueryReason: '',
   });
+  
+  const navigate = useNavigate();
 
 // To handle form response
   useEffect(()=>{
+    const loginStatus = localStorage.getItem("executiveID");
+    if(loginStatus == null){
+      navigate("/login")
+    }
     socket.on('form-response', (data)=>{
       if(data.success){
         alert('Form submitted successfully!');
