@@ -102,7 +102,7 @@ import TypingAnimation from "../../components/TypingAnimation";
         ...prevChatHistory,
         { sender: "user", message: userMessage },
       ]);
-      setLoading(true)
+      if(handler === "bot")setLoading(true)
       
       
       
