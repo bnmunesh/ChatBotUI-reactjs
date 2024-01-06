@@ -147,7 +147,7 @@ import TypingAnimation from "../../components/TypingAnimation";
     }
   
     return (
-      <section className="show-chatbot" style={{backgroundColor: "#fffff"}}>
+      <section className="show-chatbot">
           <div className="xyz">
             {showChatbot? (
               <div className="switch-text" style={{color:"black"}}>
@@ -175,7 +175,7 @@ import TypingAnimation from "../../components/TypingAnimation";
             <ul className="chatbox" ref={chatboxRef}>
               <li className="chat incoming">
                 <span className="material-symbols-outlined">smart_toy</span>
-                <p>Hello! How can I assist you today?</p>
+                <p>Hello there! I'm Aira, your Airbnb assistant. How may I help you today?</p>
               </li>
               {chatHistory.map((chat, index) => (
                 <li

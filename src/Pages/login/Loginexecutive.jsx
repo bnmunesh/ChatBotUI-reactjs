@@ -44,7 +44,9 @@ const Loginexecutive = () => {
   return (
     <div className='login-container'>
         <div className='cover'>
-            <h1 className='customFont'>Executive Login</h1>
+            <h1 className='customFont'>Admin | Executive</h1>
+            {/* <h1 className='customFont'><span className='customFont'>Admin</span> | <span className='customFont'>Executive</span></h1> */}
+
             <div className='credentials'>
                 <input type="text" placeholder='Username' value={userName} onChange={(e)=> setUserName(e.target.value)}/>
                 <input type="password" placeholder='Password' value={userPass} onChange={(e)=> setUserPass(e.target.value)} />
@@ -54,7 +56,7 @@ const Loginexecutive = () => {
                     Remember Me
             </label>
 
-            <div className='login-button customFont' onClick={popup}>Login</div>
+            <div className='login-button customFont' onClick={popup}>Log in</div>
 
             <div className={popupStyle}>
                 <h3 className='customFont'>Login Unsuccessful</h3>

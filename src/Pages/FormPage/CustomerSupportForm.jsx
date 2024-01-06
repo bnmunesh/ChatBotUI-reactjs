@@ -55,41 +55,42 @@ const CustomerSupportForm = ({socket}) => {
   };
 
   return (
+    <div className='page-Form'>
+      <h2 className="form-title">Customer Interaction Report Form</h2>
     <div className="form-container">
-      <h2 className="form-title">Customer Support Report Form</h2>
       <form className="customer-support-form">
       <div className="form-group">
-          <label htmlFor="conversationId">Conversation ID:</label>
+          <label htmlFor="conversationId">Conversation ID:<span class="required">*</span></label>
           <input type="text" id="conversationId" name="conversationId" value={formData.conversationId} onChange={handleChange} required />
         </div>
 
         <div className="form-group">
-          <label htmlFor="executiveName">Executive Name:</label>
+          <label htmlFor="executiveName">Executive Name:<span class="required">*</span></label>
           <input type="text" id="executiveName" name="executiveName" value={formData.executiveName} onChange={handleChange} required />
         </div>
 
         <div className="form-group">
-          <label htmlFor="executiveId">Executive ID:</label>
+          <label htmlFor="executiveId">Executive ID:<span class="required">*</span></label>
           <input type="text" id="executiveId" name="executiveId" value={formData.executiveId} onChange={handleChange} required />
         </div>
 
         <div className="form-group">
-          <label htmlFor="customerName">Customer Name:</label>
+          <label htmlFor="customerName">Customer Name:<span class="required">*</span></label>
           <input type="text" id="customerName" name="customerName" value={formData.customerName} onChange={handleChange} required />
         </div>
 
         <div className="form-group">
-          <label htmlFor="customerEmail">Customer Email:</label>
+          <label htmlFor="customerEmail">Customer Email:<span class="required">*</span></label>
           <input type="email" id="customerEmail" name="customerEmail" value={formData.customerEmail} onChange={handleChange} required />
         </div>
 
         <div className="form-group">
-          <label htmlFor="querySummary">Customer Query Summary:</label>
+          <label htmlFor="querySummary">Customer Query Summary:<span class="required">*</span></label>
           <textarea id="querySummary" name="querySummary" value={formData.querySummary} onChange={handleChange} rows="4" required></textarea>
         </div>
 
         <div className="form-group">
-          <label htmlFor="queryAnswered">Was the query answered with a solution?</label>
+          <label htmlFor="queryAnswered">Was the query answered with a solution?<span class="required">*</span></label>
           <select id="queryAnswered" name="queryAnswered" value={formData.queryAnswered} onChange={handleChange} required>
             <option value="yes">Yes</option>
             <option value="no">No</option>
@@ -98,12 +99,12 @@ const CustomerSupportForm = ({socket}) => {
 
         {formData.queryAnswered === 'yes' ? (
           <div className="form-group">
-            <label htmlFor="solutionSummary">Summary of the Solution Provided:</label>
+            <label htmlFor="solutionSummary">Summary of the Solution Provided:<span class="required">*</span></label>
             <textarea id="solutionSummary" name="solutionSummary" value={formData.solutionSummary} onChange={handleChange} rows="4"></textarea>
           </div>
         ) : (
           <div className="form-group">
-            <label htmlFor="noQueryReason">Reason for Not Providing a Solution:</label>
+            <label htmlFor="noQueryReason">Reason for Not Providing a Solution:<span class="required">*</span></label>
             <textarea id="noQueryReason" name="noQueryReason" value={formData.noQueryReason} onChange={handleChange} rows="4"></textarea>
           </div>
         )}
@@ -113,6 +114,8 @@ const CustomerSupportForm = ({socket}) => {
           <button type="button" onClick={handleClear} className="clear-button">Clear</button>
         </div>
       </form>
+    </div>
+    <div className='infoend'></div>
     </div>
   );
 };
