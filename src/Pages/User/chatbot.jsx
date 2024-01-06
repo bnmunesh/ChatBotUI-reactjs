@@ -6,15 +6,23 @@ import React, {
     KeyboardEvent,
   } from "react";
   import "./chatbot.css";
+import TypingAnimation from "../../components/TypingAnimation";
   const Chatbot = ({socket}) => {
     const [showChatbot, setShowChatbot] = useState(false);
     const [userMessage, setUserMessage] = useState("");
     const [chatHistory, setChatHistory] = useState([]);
     const [handler, setHandler] = useState("bot");
     const [convoIDOfficial, setConvoIDOfficial] = useState(null)
+    const [botRepliesCounter, setBotRepliesCounter] = useState(0);
+    const [executiveOptionDisplay, setExecutiveOptionDisplay] = useState(false)
+    const [loading, setLoading] = useState(false);
 
     const chatboxRef = useRef(null);
     const chatInputRef = useRef(null);
+
+    const setLoadingToFalse= () =>{
+      setLoading(false)
+    }
   
     useEffect(() => {
       if (showChatbot && chatboxRef.current) {
@@ -45,10 +53,18 @@ import React, {
           setConvoIDOfficial(convoID)
         }
       })
+      socket.on("response-generation-error", (error)=>{
+        alert(error)
+      })
+      socket.on("query-failed", (error)=>{
+        alert(error)
+        setLoadingToFalse()
+      })
       socket.on("query-response", (data)=>{
         console.log("data",data)
         localStorage.setItem("threadID", data.threadID)
         //removes loading.. and shows latest ai msg
+        setLoadingToFalse()
         setChatHistory((prevChatHistory) => [
           ...prevChatHistory, 
           { sender: "bot", message: data.text },
@@ -56,30 +72,37 @@ import React, {
       })
       socket.on("executive-response", data=>{
         setChatHistory((prevChatHistory)=>[...prevChatHistory, {sender:"executive", message: data.text}])
+        setLoadingToFalse()
       })
     }, [])
 
 
     useEffect(() => {
+      console.log("Chat history updated")
       if (chatboxRef.current) {
         chatboxRef.current.scrollTop = chatboxRef.current.scrollHeight;
+      }
+      if(handler === "bot"){
+         console.log("botRepliesCounter", botRepliesCounter)
+        if(botRepliesCounter == 4) setExecutiveOptionDisplay(true)  
+        setBotRepliesCounter(botRepliesCounter=>botRepliesCounter+1)
       }
     }, [chatHistory]);
   
     const handleChat = async () => {
       if (!userMessage.trim()) return;
-      console.log("++++++++++++++========================+++++++++++++++++++")
       if(chatHistory.length === 0) socket.emit("create-convo-and-add-message", {message:userMessage, handler});
       else{
         const threadID = localStorage.getItem("threadID");
         console.log("++++++++++++++++++++++++++++++++++++++++++++++++=")
         socket.emit("message", {message:userMessage, threadID: threadID ? threadID :null, convoID:convoIDOfficial, handler, sentBy: "user"})
       }
-        
-        setChatHistory((prevChatHistory) => [
+      
+      setChatHistory((prevChatHistory) => [
         ...prevChatHistory,
         { sender: "user", message: userMessage },
       ]);
+      setLoading(true)
       
       
       
@@ -128,7 +151,7 @@ import React, {
           <div className="xyz">
             {showChatbot? (
               <div className="switch-text" style={{color:"black"}}>
-                <p >Not satisfied with the bot? <span onClick={HanldeSwtichToExecutive} style={{textDecoration:"underline", cursor:"pointer"}}>click here to switch to an actual executive</span></p>
+                {executiveOptionDisplay ? (<p >Not satisfied with the bot? <span onClick={HanldeSwtichToExecutive} style={{textDecoration:"underline", cursor:"pointer"}}>click here to switch to an actual executive</span></p>): <></>}
               </div>
             ): (
               <div className="switch-text">
@@ -168,24 +191,34 @@ import React, {
                 </li>
               ))}
             </ul>
-            <div className="chat_input">
-              <textarea
-                placeholder="Type your message..."
-                spellCheck="false"
-                required
-                value={userMessage}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                ref={chatInputRef}
-              />
-              <span
-                id="send-btn"
-                className="material-symbols-rounded"
-                onClick={handleChat}
-              >
-               <svg viewBox="0 0 24 24" height="24" width="24" preserveAspectRatio="xMidYMid meet" class="" version="1.1" x="0px" y="0px" enable-background="new 0 0 24 24"><title>send</title><path fill="currentColor" d="M1.101,21.757L23.8,12.028L1.101,2.3l0.011,7.912l13.623,1.816L1.112,13.845 L1.101,21.757z"></path></svg>
-              </span>
+            {/* <TypingAnimation />  */}
+            
+             <div className="chat_input">
+              {/* <div> */}
+              {loading ? <TypingAnimation /> : 
+              <>
+                <textarea
+                  placeholder="Type your message..."
+                  spellCheck="false"
+                  required
+                  value={userMessage}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  ref={chatInputRef}
+                />
+                <span
+                  id="send-btn"
+                  className="material-symbols-rounded"
+                  onClick={handleChat}
+                >
+                <svg viewBox="0 0 24 24" height="24" width="24" preserveAspectRatio="xMidYMid meet" class="" version="1.1" x="0px" y="0px" enable-background="new 0 0 24 24"><title>send</title><path fill="currentColor" d="M1.101,21.757L23.8,12.028L1.101,2.3l0.011,7.912l13.623,1.816L1.112,13.845 L1.101,21.757z"></path></svg>
+                </span>
+                  </>
+                  }
+              {/* </div> */}
             </div>
+            
+            
           </div>
         )}
       </section>

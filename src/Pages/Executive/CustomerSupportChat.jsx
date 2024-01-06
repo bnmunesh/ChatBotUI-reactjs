@@ -20,11 +20,6 @@ const CustomerSupportChat = ({socket}) => {
   }, [selectedConversation])
 
   useEffect(()=>{
-
-    const executiveID=localStorage.getItem("executiveID")
-    if(!executiveID){
-      navigate("/login")
-    }
     socket.emit('load-chats-for-executive')
     socket.on("convos-for-executive", (chats)=>{
       console.log(chats)
@@ -177,6 +172,10 @@ const CustomerSupportChat = ({socket}) => {
     let arr = convos;
     arr = arr.filter(el=>el._id != selectedConversation._id)
     socket.emit("executive-sets-close-conversation", selectedConversation._id)
+    setSelectedConversation(prev => ({
+      ...prev,
+      status: "closed",
+    }))
     // navigate('/form', {state: {conversationID: selectedConversation._id} });
     window.open('http://localhost:5173/form','_blank')
   }
@@ -189,7 +188,6 @@ const CustomerSupportChat = ({socket}) => {
 
         {/* Search Bar */}
         <input
-          className="searchbarid"
           type="text"
           placeholder="Search by ID"
           value={searchTerm}
