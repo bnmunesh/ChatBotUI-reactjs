@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from "react";
 import "./AdminPage.css";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const AdminPage = () => {
   const [faqs, setFaqs] = useState([])
+  const navigate = useNavigate()
   
   useEffect(()=>{
+    const loginStatus = localStorage.getItem("adminID");
+    if(loginStatus == null){
+      navigate("/login")
+    }
+
     axios.get("http://localhost:3000/admin/faq/all-waiting").then(res=>{
       if(res.data.success){
         setFaqs(res.data.data)
@@ -23,6 +30,8 @@ const AdminPage = () => {
   const handleLogout = () => {
     // Implement your logout logic here
     console.log("Logout clicked");
+    localStorage.removeItem('adminID')
+    navigate("/login")
   };
 
   // Placeholder data for User Queries

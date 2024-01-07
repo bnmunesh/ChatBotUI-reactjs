@@ -16,13 +16,24 @@ const Loginexecutive = () => {
 
     const popup =(e) =>{
         e.preventDefault()
-
-        axios.post("http://localhost:3000/executive/login", {executiveID:userName, password:userPass}).then((res)=> {
+        let URL = "http://localhost:3000/executive/login"
+        let payload = {executiveID:userName, password:userPass}
+        if(userName.includes("admin")) {
+            payload = {...payload, adminID: userName}
+            URL = "http://localhost:3000/admin/login"
+        }
+            axios.post(URL, payload).then((res)=> {
             if(res.data.success)
             {
                 onSuccess(e)
-                localStorage.setItem("executiveID",res.data.data.executiveID)
-                naviagte("/executive")
+                if(userName.includes("admin")){
+                    localStorage.setItem("adminID",res.data.data.adminID)
+                    naviagte("/admin")
+
+                }else{
+                    localStorage.setItem("executiveID",res.data.data.executiveID)
+                    naviagte("/executive")
+                }
 
             }
 

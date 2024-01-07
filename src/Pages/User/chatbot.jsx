@@ -16,6 +16,7 @@ import TypingAnimation from "../../components/TypingAnimation";
     const [botRepliesCounter, setBotRepliesCounter] = useState(0);
     const [executiveOptionDisplay, setExecutiveOptionDisplay] = useState(false)
     const [loading, setLoading] = useState(false);
+    const [convoClosed, setConvoClosed] = useState(false);
 
     const chatboxRef = useRef(null);
     const chatInputRef = useRef(null);
@@ -52,6 +53,9 @@ import TypingAnimation from "../../components/TypingAnimation";
           localStorage.setItem("threadID", null)
           setConvoIDOfficial(convoID)
         }
+      })
+      socket.on("convo-ended", ()=>{
+        setConvoClosed(true)
       })
       socket.on("response-generation-error", (error)=>{
         alert(error)
@@ -151,7 +155,7 @@ import TypingAnimation from "../../components/TypingAnimation";
           <div className="xyz">
             {showChatbot? (
               <div className="switch-text" style={{color:"black"}}>
-                {executiveOptionDisplay ? (<p >Not satisfied with the bot? <span onClick={HanldeSwtichToExecutive} style={{textDecoration:"underline", cursor:"pointer"}}>click here to switch to an actual executive</span></p>): <></>}
+                {executiveOptionDisplay && handler === "bot" ? (<p >Not satisfied with the bot? <span onClick={HanldeSwtichToExecutive} style={{textDecoration:"underline", cursor:"pointer"}}>click here to switch to an actual executive</span></p>): <></>}
               </div>
             ): (
               <div className="switch-text">
@@ -190,32 +194,35 @@ import TypingAnimation from "../../components/TypingAnimation";
                   <p>{chat.message}</p>
                 </li>
               ))}
+              {handler !== "bot" ? <li style={{listStyle: "none", fontSize:"smaller", margin: "20px 0", textAlign:'center', opacity: "0.7"}}>Interacting with the Executive!</li> : <></>}
             </ul>
             {/* <TypingAnimation />  */}
             
              <div className="chat_input">
-              {/* <div> */}
-              {loading ? <TypingAnimation /> : 
-              <>
-                <textarea
-                  placeholder="Type your message..."
-                  spellCheck="false"
-                  required
-                  value={userMessage}
-                  onChange={handleInputChange}
-                  onKeyDown={handleKeyDown}
-                  ref={chatInputRef}
-                />
-                <span
-                  id="send-btn"
-                  className="material-symbols-rounded"
-                  onClick={handleChat}
-                >
-                <svg viewBox="0 0 24 24" height="24" width="24" preserveAspectRatio="xMidYMid meet" class="" version="1.1" x="0px" y="0px" enable-background="new 0 0 24 24"><title>send</title><path fill="currentColor" d="M1.101,21.757L23.8,12.028L1.101,2.3l0.011,7.912l13.623,1.816L1.112,13.845 L1.101,21.757z"></path></svg>
-                </span>
-                  </>
-                  }
-              {/* </div> */}
+              {!convoClosed ? loading ? <TypingAnimation /> : 
+                <>
+                  <textarea
+                    placeholder="Type your message..."
+                    spellCheck="false"
+                    required
+                    value={userMessage}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    ref={chatInputRef}
+                  />
+                  <span
+                    id="send-btn"
+                    className="material-symbols-rounded"
+                    onClick={handleChat}
+                  >
+                  <svg viewBox="0 0 24 24" height="24" width="24" preserveAspectRatio="xMidYMid meet" class="" version="1.1" x="0px" y="0px" enable-background="new 0 0 24 24"><title>send</title><path fill="currentColor" d="M1.101,21.757L23.8,12.028L1.101,2.3l0.011,7.912l13.623,1.816L1.112,13.845 L1.101,21.757z"></path></svg>
+                  </span>
+                </>
+                :
+                <div style={{height:"40px", display: "flex", justifyContent:"center", alignItems:"center", width:"inherit"}}>
+                  <p>conversation is closed</p>
+                </div>
+              }
             </div>
             
             
