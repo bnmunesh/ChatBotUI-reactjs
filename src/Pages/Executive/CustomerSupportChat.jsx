@@ -83,6 +83,7 @@ const CustomerSupportChat = ({socket}) => {
       handleSendMessage();
     }
   };
+
   useEffect(()=>{
     console.log({selectedConversation})
   }, [selectedConversation])
@@ -162,18 +163,9 @@ const CustomerSupportChat = ({socket}) => {
 
   // Function to filter conversations based on search term and status filters
   const filteredConversations = OriginalListOfConvos.filter((conversation) => {
-    const hasSearchTerm = conversation._id.toString().includes(searchTerm);
-    // const isFiltered =
-    //   (statusFilters.ongoing && conversation.status === "ongoing") ||
-    //   (statusFilters.waiting && conversation.status === "waiting") ||
-    //   (statusFilters.closed && conversation.status === "closed");
-
+    const hasSearchTerm = conversation._id.toString().toLowerCase().includes(searchTerm.toLowerCase());
     return (
       hasSearchTerm
-      // (isFiltered ||
-      //   (!statusFilters.ongoing &&
-      //     !statusFilters.waiting &&
-      //     !statusFilters.closed))
     );
   });
 
@@ -312,7 +304,7 @@ const CustomerSupportChat = ({socket}) => {
                 <div className="conversation-box">
                     <ul className="conversation-list">
                       {convos.length===0?<p>No chats found</p> :
-                        convos.length > 0 && convos.map((conversation, i) => (
+                        convos.length > 0 && convos.map /*&& filteredConversations.map*/ ((conversation, i) => (
                           <div
                             key={conversation._id}
                             className={`conversation-item ${
