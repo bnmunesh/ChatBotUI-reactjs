@@ -220,7 +220,7 @@ import TypingAnimation from "../../components/TypingAnimation";
                 </>
                 :
                 <div style={{height:"40px", display: "flex", justifyContent:"center", alignItems:"center", width:"inherit"}}>
-                  <p>conversation is closed</p>
+                  <p>Conversation is closed :) </p>
                 </div>
               }
             </div>

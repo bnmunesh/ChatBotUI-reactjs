@@ -1,8 +1,65 @@
 // CustomerSupportChat.js
-import "../../App.css";
-import React, { useEffect, useState } from "react";
+// import "../../App.css";
+import React, { useEffect, useState, useRef} from "react";
+import { AppBar,Toolbar,styled,Box,Dialog,InputBase,Divider, Menu, MenuItem} from '@mui/material'
 import "./customer-support-chat.css";
 import { useNavigate } from "react-router-dom";
+import execLogo from '../../assets/man.png'
+import morevert from '../../assets/menu.png'
+import searchicon from '../../assets/iconsearch.svg'
+import defuser from '../../assets/user.png'
+import attachicon from '../../assets/attach-file.png'
+
+
+const Component = styled(Box)`
+height: 100vh;
+background: #d3ccc;
+`
+
+const Header = styled(AppBar)`
+height: 125px;
+background-color: rgb(0, 22, 123);
+box-shadow: none;
+`
+const Inputfield = styled(InputBase)`
+width:100%;
+padding: 16px;
+height: 15px;
+padding-left: 60px;
+font-size: 14px;
+`
+const StyledDivider = styled(Divider)`
+margin: 0 0 0 70px;
+background-color: #e9edef;
+opacity: 0.4;
+`
+const StyledDivider2 = styled(Divider)`
+margin: 2em 15em 0px 15em;
+background-color: #e9edef;
+opacity: 0.6;
+`
+const Inputfield2 = styled(InputBase)`
+width:100%;
+padding: 20px;
+height: 20px;
+padding-left: 25px;
+font-size: 14px;
+`
+
+const DialogStyle = {
+  height: '96%',
+  marginTop: '3%',
+  width: '97%',
+  borderRadius: '0px',
+  maxWidth: '100%',
+  maxHeight: '100%',
+  boxShadow: 'none',
+  overflow: 'none'
+}
+
+
+
+
 
 const CustomerSupportChat = ({socket}) => {
   const [convos, setConvos] = useState([])
@@ -10,11 +67,22 @@ const CustomerSupportChat = ({socket}) => {
   const [selectedConversation, setSelectedConversation] = useState(null);
   const navigate = useNavigate();
 
+  const scrollRef = useRef();
+
+  useEffect(()=> {
+    scrollRef.current?.scrollIntoView({transition: 'smooth'})
+  })
+
   useEffect(()=>{
     handleStatusFilterChange("setAllByCheckingStatusFilter");
   }, [OriginalListOfConvos])
 
-
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
   useEffect(()=>{
     console.log({selectedConversation})
   }, [selectedConversation])
@@ -95,17 +163,17 @@ const CustomerSupportChat = ({socket}) => {
   // Function to filter conversations based on search term and status filters
   const filteredConversations = OriginalListOfConvos.filter((conversation) => {
     const hasSearchTerm = conversation._id.toString().includes(searchTerm);
-    const isFiltered =
-      (statusFilters.ongoing && conversation.status === "ongoing") ||
-      (statusFilters.waiting && conversation.status === "waiting") ||
-      (statusFilters.closed && conversation.status === "closed");
+    // const isFiltered =
+    //   (statusFilters.ongoing && conversation.status === "ongoing") ||
+    //   (statusFilters.waiting && conversation.status === "waiting") ||
+    //   (statusFilters.closed && conversation.status === "closed");
 
     return (
-      hasSearchTerm &&
-      (isFiltered ||
-        (!statusFilters.ongoing &&
-          !statusFilters.waiting &&
-          !statusFilters.closed))
+      hasSearchTerm
+      // (isFiltered ||
+      //   (!statusFilters.ongoing &&
+      //     !statusFilters.waiting &&
+      //     !statusFilters.closed))
     );
   });
 
@@ -184,102 +252,184 @@ const CustomerSupportChat = ({socket}) => {
     window.open('http://localhost:5173/form','_blank')
   }
 
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+  
+  const handleLogout = () => {
+    // Implement your logout logic here
+    console.log("Logout clicked");
+    localStorage.removeItem('executiveID')
+    navigate("/login")
+  };
+
   return (
-    <div className="chat-container">
-      {/* Left Column */}
-      <div className="conversations-container">
-        <h2>Conversations</h2>
+    <Component>
+    <Header>
+      <Toolbar></Toolbar>
+    </Header>
+    
+    <Dialog open={true} PaperProps={{sx: DialogStyle}} maxWidth={'md'} >
+        <div className='chat-container'>
 
-        {/* Search Bar */}
-        <input
-          type="text"
-          placeholder="Search by ID"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+            <div className='Leftcol'>
 
-        <ul className="conversation-list">
-          {convos.length > 0 && convos.map((conversation, i) => (
-            <div
-              key={conversation._id}
-              className={`conversation-item ${
-                selectedConversation?._id === conversation._id ? "selected" : "notselected"
-              }`}
-              onClick={() => handleConversationSelect(conversation._id)}
-            >
-              <div>{`ID: ${conversation._id}`}</div>
-              <div>Status: {conversation.status === "closed"? "closed": conversation.executiveSocketID != null ? "ongoing" : "waiting"}</div>
-            </div>
-          ))}
-        </ul>
+               <div className='Headbox'>
+                   <img src={execLogo} alt="User" />
+                   <h2>Chats</h2>
+                   <img src={morevert} alt="User" onClick={handleClick}/>
+                   <Menu
+                      anchorEl={anchorEl}
+                      keepMounted
+                      open={open}
+                      onClose={handleClose}
+                      MenuListProps={{
+                        'aria-labelledby': 'basic-button',
+                      }}
+                    >
+                      <MenuItem>Profile</MenuItem>
+                      <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                  </Menu>
+               </div>
 
-        {/* Add Box with Check Options for Status Filters */}
-        <div className="status-filters">
-          <label>
-            <input
-              type="checkbox"
-              checked={statusFilters.ongoing}
-              onChange={() => handleStatusFilterChange("ongoing")}
-            />
-            Ongoing
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={statusFilters.waiting}
-              onChange={() => handleStatusFilterChange("waiting")}
-            />
-            Waiting
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={statusFilters.closed}
-              onChange={() => handleStatusFilterChange("closed")}
-            />
-            Closed
-          </label>
-        </div>
-      </div>
-
-      {/* Right Column */}
-      <div className="chat-window">
-        {selectedConversation ? (
-          <>
-            <div className="conversation-header">
-              <h2 className="chat-header">{`Conversation ID: ${selectedConversation._id} - Status: ${selectedConversation.status === "closed"? "closed": selectedConversation.executiveSocketID != null ? "ongoing" : "waiting"}`}</h2>
-              {selectedConversation.status === "closed" ? <></>: <button onClick={handleEndConversation}>End Chat</button>}
-            </div>
-            <div className="message-container">
-              {/* Display messages for the selected conversation */}
-              {selectedConversation.messages.map((message, index) => (
-                <div
-                  key={index}
-                  className={`message-item ${message.sentBy === "bot" || message.sentBy === "executive" ? "outgoing" : 'incoming'}`}
-                >
-                  {message.text}
+               <div className='search-box'>
+                    <div className='Searchbar'>
+                        <img src={searchicon} alt="" />
+                        <Inputfield 
+                           type='text'
+                           placeholder='Search by id'
+                           value={searchTerm}
+                           onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
                 </div>
-              ))}
+                
+                <div className="conversation-box">
+                    <ul className="conversation-list">
+                      {convos.length===0?<p>No chats found</p> :
+                        convos.length > 0 && convos.map((conversation, i) => (
+                          <div
+                            key={conversation._id}
+                            className={`conversation-item ${
+                              selectedConversation?._id === conversation._id ? "selected" : "notselected"
+                            }`}
+                            onClick={() => handleConversationSelect(conversation._id)}
+                          >
+                            <div className="convoitems">
+                                <img src={defuser} alt="" />
+                                <div>
+                                    <div className="rightconvid">{`ID: ${conversation._id}`}</div>
+                                    <div className="leftstatus">Status: {conversation.status === "closed"? "Closed": conversation.executiveSocketID != null ? "Ongoing" : "Waiting"}</div>
+                                </div>
+                            </div>
+                                <StyledDivider /> 
+                          </div>
+                        ))}
+                   </ul>
+                </div>
+
+                <div className='status-filter'>
+                    <label>
+                        <input
+                        type="checkbox"
+                        checked={statusFilters.ongoing}
+                        onChange={() => handleStatusFilterChange("ongoing")}
+                        />
+                        Ongoing
+                    </label>
+                    <label>
+                        <input
+                        type="checkbox"
+                        checked={statusFilters.waiting}
+                        onChange={() => handleStatusFilterChange("waiting")}
+                        />
+                        Waiting
+                    </label>
+                    <label>
+                        <input
+                        type="checkbox"
+                        checked={statusFilters.closed}
+                        onChange={() => handleStatusFilterChange("closed")}
+                        />
+                        Closed
+                    </label>
+                </div>
+
             </div>
 
-            {/* Type Message Box and Send Button */}
-            { selectedConversation.status !== "closed" && <div className="input-box">
-                <input
-                  type="text"
-                  placeholder="Type your message..."
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  />
-                <button onClick={handleSendMessage}>Send</button>
-              </div>
-            }
-          </>
-        ) : (
-          <p>Select a conversation to start chatting</p>
-        )}
-      </div>
-    </div>
-  );
+            {/* Right Column */}
+            <div className='Rightcol'>
+
+                    {selectedConversation ? (
+                    <>
+
+                        <div className="conversation-header">
+                        <img src={defuser} alt="" />
+                        <div className="detailsheader">
+                            <p className="chat-header">{` ${selectedConversation._id}`}</p>
+                            <p className="statusheader">{` ${selectedConversation.status === "closed"? "Closed": selectedConversation.executiveSocketID != null ? "Ongoing" : "Waiting"}`}</p>
+                        </div>
+                        {selectedConversation.status === "closed" ? <></>: <button onClick={handleEndConversation}>End Chat</button>}
+                        </div>
+
+                        <div className="message-container" useRef={scrollRef}>
+                        {/* Display messages for the selected conversation */}
+                        {selectedConversation.messages.map((message, index) => (
+                            <div
+                            key={index}
+                            className={`message-item ${message.sentBy === "bot" || message.sentBy === "executive" ? "outgoing" : 'incoming'}`}
+                            >
+                            <p>{message.text}</p>
+                            </div>
+                        ))}
+                        </div>
+
+                        {/* Type Message Box and Send Button */}
+                        <div className="rightfooter">
+                          { selectedConversation.status !== "closed" && <div className="input-box">
+                              <img src={attachicon} alt="" />
+                              <div className="type">
+
+                                    <Inputfield2
+                                    type="text"
+                                    placeholder="Type your message..."
+                                    value={newMessage}
+                                    onChange={(e) => setNewMessage(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    />
+                              </div>
+                              <span
+                                id="send-btn"
+                                className="material-symbols-rounded"
+                                onClick={handleSendMessage}
+                              >
+                                <svg viewBox="0 0 24 20" height="24" width="24" preserveAspectRatio="xMidYMid meet" class="" version="1.1" x="0px" y="0px" enable-background="new 0 0 24 24"><title>send</title><path fill="currentColor" d="M1.101,21.757L23.8,12.028L1.101,2.3l0.011,7.912l13.623,1.816L1.112,13.845 L1.101,21.757z"></path></svg>
+                              </span>
+                          </div>
+                          }
+                        </div>
+                    </>
+                    ) : (
+                    <div className='emptychat'>
+                            <img src="https://i.gadgets360cdn.com/large/whatsapp_multi_device_support_update_image_1636207150180.jpg" alt="Emptychat-image" />
+                            <p className='title'>Select a conversation to start chatting</p>
+                            <p className='subtitle'>Send and receive messages seamlessly!</p>
+                            <p className='subtitle'>Please report any bugs found.</p>
+                            <StyledDivider2/>
+                    </div>
+                    )}
+            </div>
+
+        </div>
+    </Dialog>
+     
+  </Component>
+);
 };
 
 export default CustomerSupportChat;

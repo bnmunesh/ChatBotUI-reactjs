@@ -116,8 +116,8 @@ const CustomerSupportForm = ({socket}) => {
         )}
 
         <div className="form-buttons">
-          <button type="button" onClick={handleSubmit} className="submit-button">Submit</button>
           <button type="button" onClick={handleClear} className="clear-button">Clear</button>
+          <button type="button" onClick={handleSubmit} className="submit-button">Submit</button>
         </div>
       </form>
     </div>

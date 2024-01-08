@@ -20,9 +20,13 @@
     height: 29px;
     width: 95px;
     border-radius: 30px;
+    background-color:#5a5adf;
+    color: #fff;
+    border:none; 
+    border-radius:10px; 
   }
   .navbar-right button:hover{
-    background-color: #f0e9e9;
+    background-color: #e02626;
   }
   
   /* Two-column layout styles */

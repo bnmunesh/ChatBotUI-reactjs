@@ -52,6 +52,12 @@ const Loginexecutive = () => {
         console.log(e)
     }
 
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            popup(e);
+        }
+    };
+
   return (
     <div className='login-container'>
         <div className='cover'>
@@ -60,7 +66,7 @@ const Loginexecutive = () => {
 
             <div className='credentials'>
                 <input type="text" placeholder='Username' value={userName} onChange={(e)=> setUserName(e.target.value)}/>
-                <input type="password" placeholder='Password' value={userPass} onChange={(e)=> setUserPass(e.target.value)} />
+                <input type="password" placeholder='Password' value={userPass} onChange={(e)=> setUserPass(e.target.value)} onKeyDown={handleKeyDown}/>
             </div>
             <label className='customFont labelcheckbox' >
                     <input className='checkboxlogin'  type="checkbox" checked={rememberMe} onChange={() => setRememberMe(!rememberMe)}/>
